@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <string>
 #include <stdio.h>
@@ -170,6 +169,12 @@ void printQueue(queue<instruction> steps)
 
 int beginFork(instruction I)
 {
+    
+    int pfd1[2];
+    if(pipe(pfd1) == -1){
+        fprintf(stderr, "Pipe Failed");
+        exit(1);
+    }
     if(I.readFile != "")
     {
         int readFile;
@@ -299,13 +304,13 @@ int main()
 {
     queue<instruction> steps = getInput();
     bool pipeSwap, firstPipe;
-    bool pipe = false;
+    bool pipeStatus = false;
     instruction I = steps.front();
     
     // Determines if there needs to be a pipe or not
     if(I.isNextPipe)
     {
-        pipe = true;
+        pipeStatus = true;
         firstPipe = true;
     }
     
@@ -315,14 +320,18 @@ int main()
         fprintf(stderr, "Pipe Failed");
         exit(1);
     }
-        
+    int pfd2[2];
+    if(pipe(pfd2) == -1){
+        fprintf(stderr, "Pipe 2 Failed!");
+    }
+
     // Goes through until there are no instructions left
     while(!steps.empty())
     {
         I = steps.front();
         
         // If no pipe, does a basic fork
-        if(!pipe)
+        if(!pipeStatus)
         {
             basicFork(I);        
         }
@@ -370,11 +379,14 @@ int main()
         }
         steps.pop();
     }
-    close(pfd1[0]);
-    close(pfd1[1]);
     
     while( wait( ( int *) 0) != -1)
         ;
  
+    close(pfd1[0]);
+    close(pfd2[0]);
+    close(pfd1[1]);
+    close(pfd2[1]);
+    
     return 0;
 }
