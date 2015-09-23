@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <string.h>
 
 using namespace std;
 
@@ -18,7 +19,7 @@ struct arg
 
 struct instruction
 {
-    arg args;
+    vector<char *> args;
     bool isNextPipe;
     string readFile;
     string writeFile;
@@ -32,6 +33,14 @@ int printVector(vector<string> v)
     cout << endl;
 
     return 0;
+}
+
+char* convert(string str)
+{
+    char *cstr = new char[str.length() + 1];
+    strcpy(cstr, str.c_str());
+    
+    return cstr;
 }
 
 queue<instruction> getInput()
@@ -78,21 +87,17 @@ queue<instruction> getInput()
     while(!tempArg.empty())
     {
         instruction I;
-        I.args.arg1 = "";
-        I.args.arg2 = "";
-        I.args.arg3 = "";
-        I.args.arg4 = "";
         I.isNextPipe = false;
         I.readFile = "";
         I.writeFile = "";
         I.in = 0;
         I.out = 0;
         if(tempArg[0] != "|")
-            I.args.arg1 = tempArg[0];
+            I.args.push_back(convert(tempArg[0]));
         tempArg.erase(tempArg.begin());
         if(tempArg[0] == "-l")
         {
-            I.args.arg2 = tempArg[0];
+            I.args.push_back(convert(tempArg[0]));
             tempArg.erase(tempArg.begin(), tempArg.begin()+1);
             if(tempArg[0] == ">")
             {
@@ -128,12 +133,16 @@ queue<instruction> getInput()
         cout << endl;
         //printVector(tempArg);
         */
-        if(I.args.arg1 != "")
+        if(!I.args.empty())
+        {
+            I.args.push_back(NULL);
             forks.push(I);   
+        }
     }
     return forks;
 }
 
+/*
 void printQueue(queue<instruction> steps)
 {
     
@@ -166,7 +175,7 @@ void printQueue(queue<instruction> steps)
         cout << endl;
     }   
 }
-
+*/
 int beginFork(instruction I)
 {
     
@@ -198,8 +207,8 @@ int beginFork(instruction I)
                 cout << "Errors in first Child Process!" << endl;
                 exit(1);
             }
-            execlp(I.args.arg1.c_str(), I.args.arg1.c_str(), I.args.arg2.c_str(),\
-                    I.args.arg3.c_str(), I.args.arg4.c_str(), NULL);
+            char **command = &I.args[0];
+            execvp(command[0], command);
     }
     
     return 0;
@@ -218,8 +227,8 @@ int midFork(instruction I)
                 cout << "Errors in second Child Process!" << endl;
                 exit(1);
             }
-            execlp(I.args.arg1.c_str(), I.args.arg1.c_str(), I.args.arg2.c_str(),\
-                    I.args.arg3.c_str(), I.args.arg4.c_str(), NULL);
+            char **command = &I.args[0];
+            execvp(command[0], command);
     }
     
     return 0;
@@ -250,8 +259,8 @@ int endFork(instruction I)
                 cout << "Errors in third Child Process!" << endl;
                 exit(1);
             }
-            execlp(I.args.arg1.c_str(), I.args.arg1.c_str(), I.args.arg2.c_str(),\
-                    I.args.arg3.c_str(), I.args.arg4.c_str(), NULL);
+            char **command = &I.args[0];
+            execvp(command[0], command);
     }
     
     return 0;
@@ -293,8 +302,8 @@ int basicFork(instruction I)
                 cout << "Errors in fourth Child Process!" << endl;
                 exit(1);
             }
-            execlp(I.args.arg1.c_str(), I.args.arg1.c_str(), I.args.arg2.c_str(),\
-                    I.args.arg3.c_str(), I.args.arg4.c_str(), NULL);
+            char **command = &I.args[0];
+            execvp(command[0], command);
     }
     
     return 0;
